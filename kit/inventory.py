@@ -12,14 +12,21 @@ from collections import Counter
 from common import APP, ROOT, access, endpoint_of, java_files
 
 MAPPING = re.compile(r'@(Get|Post|Put|Delete|Patch)Mapping\(\s*(?:value\s*=\s*)?"([^"]+)"')
+BASE = re.compile(r'@RequestMapping\(\s*(?:value\s*=\s*)?"([^"]+)"')
 
 
 def declared_endpoints() -> dict[str, str]:
-    """method+path -> java file, parsed from the controller annotations."""
+    """method+path -> java file, parsed from the controller annotations.
+
+    The class-level @RequestMapping is a prefix, so /api plus /customers/{id} is one endpoint, not two.
+    """
     out: dict[str, str] = {}
     for f in java_files():
-        for verb, path in MAPPING.findall(f.read_text(encoding="utf-8")):
-            out[f"{verb.upper()} {path}"] = str(f.relative_to(ROOT))
+        text = f.read_text(encoding="utf-8")
+        base = (BASE.search(text).group(1).rstrip("/") if BASE.search(text) else "")
+        for verb, path in MAPPING.findall(text):
+            full = path if path.startswith(base or "\0") else base + path
+            out[f"{verb.upper()} {full}"] = str(f.relative_to(ROOT))
     return out
 
 

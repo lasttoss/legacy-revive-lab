@@ -5,30 +5,25 @@ Traffic sample: **20 requests** across **5 distinct endpoints**.
 
 | Endpoint | Declared in | Hits | % traffic |
 |---|---|---|---|
-| `GET /api/customers/{id}` | not in code | 7 | 35.0% |
-| `GET /api/orders/{id}` | not in code | 6 | 30.0% |
-| `GET /api/reports/top` | not in code | 3 | 15.0% |
-| `POST /api/orders` | not in code | 3 | 15.0% |
-| `GET /api/legacy/ping` | not in code | 1 | 5.0% |
-| `GET /customers/{id}` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 0 | 0.0% |
-| `GET /legacy/ping` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 0 | 0.0% |
-| `GET /orders/{id}` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 0 | 0.0% |
-| `GET /reports/top` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 0 | 0.0% |
-| `POST /orders` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 0 | 0.0% |
+| `GET /api/customers/{id}` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 7 | 35.0% |
+| `GET /api/orders/{id}` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 6 | 30.0% |
+| `GET /api/reports/top` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 3 | 15.0% |
+| `POST /api/orders` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 3 | 15.0% |
+| `GET /api/legacy/ping` | legacy-app/src/main/java/com/example/legacy/web/LegacyController.java | 1 | 5.0% |
 
 ## Ranked work list
 
 Order is `traffic% x has-no-test x criticality`, never alphabetical:
 
-1. `GET /api/customers/{id}` — 35.0% of traffic, source not in code, test NONE
-2. `GET /api/orders/{id}` — 30.0% of traffic, source not in code, test NONE
-3. `GET /api/reports/top` — 15.0% of traffic, source not in code, test NONE
-4. `POST /api/orders` — 15.0% of traffic, source not in code, test NONE
-5. `GET /api/legacy/ping` — 5.0% of traffic, source not in code, test NONE
+1. `GET /api/customers/{id}` — 35.0% of traffic, source legacy-app/src/main/java/com/example/legacy/web/LegacyController.java, test yes
+2. `GET /api/orders/{id}` — 30.0% of traffic, source legacy-app/src/main/java/com/example/legacy/web/LegacyController.java, test yes
+3. `GET /api/reports/top` — 15.0% of traffic, source legacy-app/src/main/java/com/example/legacy/web/LegacyController.java, test yes
+4. `POST /api/orders` — 15.0% of traffic, source legacy-app/src/main/java/com/example/legacy/web/LegacyController.java, test yes
+5. `GET /api/legacy/ping` — 5.0% of traffic, source legacy-app/src/main/java/com/example/legacy/web/LegacyController.java, test yes
 
 ## Dead code
 
 Class names that appear nowhere else in the source tree. They cost coverage and confuse readers;
 the revival removes them (git history keeps them):
 
-- `LegacyDeadCode`
+- `LegacySQLiteDialect`

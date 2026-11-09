@@ -54,6 +54,7 @@ samples/rpc.log      11 cross-service calls       -> service map, endpoint->endp
 | `samples/golden/*.json` | `make record` | what the service actually answers, today |
 | `GoldenMasterTest.java` | `make tests` | one test per recording, generated |
 | `docs/API.md` | `make docs` | per-endpoint contract with real request/response |
+| `out/CHANGED-IMPACT.md` | `make changed-git` | this diff touches these endpoints, tables, callers, recordings |
 
 ## Measured on this snapshot
 
@@ -78,6 +79,29 @@ generated artifacts 11 markdown files + 1 json, all reproducible
 
 Coverage went 84.9% -> 89.2% with one change: deleting the class nothing referenced. That is the cheapest
 coverage win in any legacy codebase, and the inventory finds it automatically.
+
+## When someone changes code: what else is affected
+
+```bash
+make changed FILES="legacy-app/src/main/java/com/example/legacy/model/OrderEntity.java"
+make changed-git        # same, from `git diff HEAD` — what a pull request would touch
+```
+
+Real output for one entity file on this snapshot:
+
+```
+changed=1 mapped=1 unmapped=0 endpoints=4 -> out/CHANGED-IMPACT.md
+  OrderEntity.java
+    endpoints: GET /api/customers/{id}, GET /api/orders/{id}, GET /api/reports/top, POST /api/orders
+    tests:     a001 … a020 (19 of 20 recordings)
+```
+
+`out/CHANGED-IMPACT.md` lists four things per changed file: **endpoints** (declared there, or reading a table
+the file owns), **tables reached**, **callers to notify** (from the trace ids in `samples/rpc.log`) and
+**recordings to re-run**. A file it cannot map is printed as `UNMAPPED` with a reason — it is never reported
+as "no impact", because that is the one answer that causes incidents.
+
+CI runs `changed.py --git` on every pull request and writes the impact list into the run summary.
 
 ## Optional: an AI on top — never inside the numbers
 

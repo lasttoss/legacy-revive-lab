@@ -42,6 +42,11 @@ jobs:
           python3 kit/advise.py --dry-run
           python3 kit/advise.py --check
 
+      # On a pull request, print what the diff touches: endpoints, tables, callers and recordings to re-run.
+      - name: Change impact (pull requests)
+        if: github.event_name == 'pull_request'
+        run: python3 kit/changed.py --git | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Coverage gate
         run: python3 kit/coverage_gate.py
 

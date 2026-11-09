@@ -4,9 +4,11 @@ IMAGE := maven:3.9-eclipse-temurin-8
 MVN := docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e MAVEN_OPTS="-Dmaven.repo.local=/tmp/m2" \
        -v "$(PWD):/w" -v "$$HOME/.m2:/tmp/m2" -w /w/legacy-app $(IMAGE) mvn -B -Dmaven.repo.local=/tmp/m2
 
-.PHONY: help maps record tests verify docs coverage advise-prompt advise-dry advise-fixture advise advise-check all clean
+.PHONY: help changed changed-git maps record tests verify docs coverage advise-prompt advise-dry advise-fixture advise advise-check all clean
 
 help:
+	@echo "make changed FILES=\"a.java b.java\"   what is affected by these files -> out/CHANGED-IMPACT.md"
+	@echo "make changed-git                        same, from git diff HEAD (what a PR would touch)"
 	@echo "make maps       inventory, endpoint->table, error catalogue, service map (no build needed)"
 	@echo "make record     replay samples/access.log against the app -> samples/golden/ (phase A)"
 	@echo "make tests      generate the JUnit suite from the recordings (phase B)"
@@ -18,6 +20,12 @@ help:
 	@echo "make advise-fixture replay a saved answer through validate+render; no request, no key"
 	@echo "make advise         one real OpenAI call (needs OPENAI_API_KEY) -> docs/ADVICE.md"
 	@echo "make all            maps + tests + verify + coverage + docs"
+
+changed:
+	@python3 kit/changed.py $(FILES)
+
+changed-git:
+	@python3 kit/changed.py --git
 
 maps:
 	@python3 kit/inventory.py
