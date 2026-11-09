@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import urllib.error
 import urllib.request
 
-ENDPOINT = "https://api.openai.com/v1/chat/completions"
-DEFAULT_MODEL = "gpt-4o-mini"
+# Any OpenAI-compatible endpoint works: OpenAI, Command Code, a local vLLM, an internal gateway.
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+UA = "legacy-revive-lab/0.1 (+https://github.com/lasttoss/legacy-revive-lab)"
 
 
 class LLMError(RuntimeError):
@@ -34,25 +37,38 @@ def chat(messages: list[dict], model: str | None = None, timeout: int = 60,
     if not key:
         raise LLMError("OPENAI_API_KEY is not set — use --dry-run or --fixture")
 
-    payload = json.dumps({
-        "model": model or os.environ.get("OPENAI_MODEL", DEFAULT_MODEL),
-        "messages": messages,
-        "temperature": temperature,
-        "response_format": {"type": "json_object"},
-    }).encode("utf-8")
-
-    req = urllib.request.Request(ENDPOINT, data=payload, method="POST", headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {key}",
-    })
+    def send(json_mode: bool) -> tuple[str, dict]:
+        body_obj = {
+            "model": model or DEFAULT_MODEL,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        if json_mode:                    # not every compatible gateway implements response_format
+            body_obj["response_format"] = {"type": "json_object"}
+        req = urllib.request.Request(BASE_URL + "/chat/completions",
+                                     data=json.dumps(body_obj).encode("utf-8"), method="POST",
+                                     headers={"Content-Type": "application/json",
+                                              "Authorization": f"Bearer {key}",
+                                              "Accept": "application/json",
+                                              # without an explicit agent, some gateways answer
+                                              # 403 "error code: 1010" to the default urllib agent
+                                              "User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            out = json.loads(r.read().decode("utf-8"))
+        return out["choices"][0]["message"]["content"], out.get("usage", {})
 
     last: Exception | None = None
     for attempt in (1, 2):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                body = json.loads(r.read().decode("utf-8"))
-            return body["choices"][0]["message"]["content"]
-        except urllib.error.HTTPError as e:              # 4xx will not improve on retry
+            try:
+                text, usage = send(json_mode=True)
+            except urllib.error.HTTPError as e:
+                if e.code not in (400, 422):             # only "unsupported parameter" is retried
+                    raise
+                text, usage = send(json_mode=False)
+            print(f"usage: {usage or 'not reported by this endpoint'}", file=sys.stderr)
+            return text
+        except urllib.error.HTTPError as e:
             detail = e.read().decode("utf-8", "replace")[:400]
             raise LLMError(f"HTTP {e.code}: {detail}") from e
         except (urllib.error.URLError, TimeoutError, KeyError) as e:

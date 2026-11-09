@@ -55,9 +55,10 @@ def evidence_pack() -> dict:
     edoc = ROOT / "docs/ERRORS.md"
     if edoc.exists():
         for line in edoc.read_text(encoding="utf-8").splitlines():
-            m = re.match(r"\|\s*`([0-9a-f]{12})`\s*\|", line)
+            m = re.match(r"\|\s*`([0-9a-f]+)`\s*\|\s*(\d+)\s*\|\s*([A-Z]+)\s*\|\s*`([^`]*)`\s*\|", line)
             if m:
-                errors.append({"id": f"E-{m.group(1)}", "fingerprint": m.group(1)})
+                errors.append({"id": f"E-{m.group(1)}", "events": int(m.group(2)),
+                               "level": m.group(3), "exception": m.group(4)})
 
     recorded = sorted({json.loads(g.read_text(encoding="utf-8"))["status"]
                        for g in sorted((SAMPLES / "golden").glob("*.json"))})
@@ -185,8 +186,15 @@ def main() -> int:
                   "  make advise-dry      print the prompt and the token estimate\n"
                   "  make advise-fixture  run the full render + validate path offline")
             return 2
-        answer = json.loads(chat(build_prompt(pack)))
-        source = "OpenAI, one request"
+        raw = chat(build_prompt(pack)).strip()
+        if raw.startswith("```"):                       # gateway without json mode
+            raw = raw.split("```")[1]
+            raw = raw[4:] if raw.lower().startswith("json") else raw
+        answer = json.loads(raw)
+        from urllib.parse import urlparse
+        import os as _os
+        source = (f"one request to `{_os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')}` at "
+                  f"`{urlparse(_os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')).netloc}`")
 
     kept, dropped = validate(answer, pack)
     OUT.write_text(render(answer, kept, dropped, source), encoding="utf-8")

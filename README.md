@@ -88,8 +88,22 @@ changing a single test, map or coverage point.
 ```bash
 make advise-dry       # print the exact prompt, its size and its token estimate — no key, no request
 make advise-fixture   # replay a saved response through validate + render — no key, no request
-make advise           # one real call: OPENAI_API_KEY=... make advise
+make advise           # one real call against any OpenAI-compatible endpoint
 ```
+
+Three environment variables, no provider hard-coded, no SDK:
+
+```bash
+export OPENAI_BASE_URL=https://api.openai.com/v1     # or your own gateway / Command Code / vLLM
+export OPENAI_MODEL=gpt-4o-mini
+export OPENAI_API_KEY=sk-...                          # read from the environment, never written to disk
+make advise
+```
+
+Any OpenAI-compatible `/chat/completions` endpoint works. Two things learned by running it against a
+non-OpenAI gateway: `response_format` is not always supported (the client falls back once, automatically),
+and the default `urllib` agent can be refused with `403 error code: 1010` — so the client sends an explicit
+`User-Agent`. Nothing about a provider is committed to this repository; bring your own.
 
 Check the direction locally before paying for it. `--dry-run` on this snapshot:
 
@@ -108,6 +122,15 @@ number check     every number in a suggestion must already exist in the pack
 
 The fixture proves both: three suggestions survive, and *"reduce latency by 40%"* is dropped because `40`
 appears nowhere in the evidence. A model that invents a percentage cannot get it into `docs/ADVICE.md`.
+
+A real run on this snapshot (`deepseek/deepseek-v4.1-flash` through a third-party gateway) returned 7
+suggestions and all 7 passed both guardrails: every line cited an artifact that existed in the pack, and no
+number appeared that the pack did not already contain. Usage reported by that endpoint: 681 prompt tokens,
+1 884 completion tokens (1 370 of them reasoning). An earlier run of the same prompt returned 9 suggestions.
+
+**That difference is the reason this file is advisory.** The model is not deterministic, so its output can be
+reviewed, diffed and ignored — but never asserted. Every number that a build depends on comes from the
+deterministic steps above.
 
 **What it is not** (also written at the bottom of every generated advice file): not a measurement, not part
 of the gate, and deleting it changes nothing about the tests. CI runs `--dry-run` and `--check` only, so the
