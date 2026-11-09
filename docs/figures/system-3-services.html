@@ -16,11 +16,11 @@
 </head>
 <body>
 <figure>
-<svg id="system" viewBox="0 0 900 620" width="900" height="620" role="img" aria-labelledby="t d">
+<svg id="system" viewBox="0 0 900 760" width="900" height="760" role="img" aria-labelledby="t d">
   <title id="t">Three related services: who calls whom, from the trace ids</title>
   <desc id="d">Each box is a Spring service discovered in the tree, with its endpoint count, tables and test files. Arrows are call edges counted from shared trace ids in the call log. Services that exchange calls are connected; the number on each arrow is how often it happened in the sample.</desc>
-  <rect x="0" y="0" width="900" height="620" fill="var(--paper)"/>
-  <text x="24" y="40" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">SERVICES, CALL EDGES AND TABLE ACCESS — ALL FROM LOGS</text>
+  <rect x="0" y="0" width="900" height="760" fill="var(--paper)"/>
+  <text x="24" y="40" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">SERVICES → ENDPOINTS → TABLES, EVERY LINE FROM A LOG</text>
   <line x1="24" y1="52" x2="876" y2="52" stroke="var(--rule)" stroke-width="1"/>
   <g>
     <rect x="24" y="132" width="232" height="156" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
@@ -59,28 +59,60 @@
   <polygon points="572,222 562,217 562,227" fill="var(--muted)"/>
   <text x="614" y="215" font-size="11" fill="var(--soft)" text-anchor="middle" class="mono">2 calls</text>
   <g>
-    <rect x="24" y="380" width="210" height="74" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
-    <text x="40" y="406" font-size="14.5" font-weight="600">table customers</text>
-    <text x="40" y="426" font-size="11" fill="var(--muted)">used by customer-svc</text>
-    <text x="40" y="448" font-size="11.5" fill="var(--muted)">SELECT 5 · UPDATE 1</text>
+    <rect x="24" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="32" y="333" font-size="9.5" fill="var(--ink)" class="mono">GET /api/ping</text>
+    <text x="32" y="349" font-size="9" fill="var(--soft)" class="mono">no statements</text>
   </g>
   <g>
-    <rect x="274" y="380" width="210" height="74" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
-    <text x="290" y="406" font-size="14.5" font-weight="600">table orders</text>
-    <text x="290" y="426" font-size="11" fill="var(--muted)">used by order-svc</text>
-    <text x="290" y="448" font-size="11.5" fill="var(--muted)">INSERT 1 · SELECT 3</text>
+    <rect x="170" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="178" y="333" font-size="9.5" fill="var(--ink)" class="mono">POST /api/session</text>
+    <text x="178" y="349" font-size="9" fill="var(--soft)" class="mono">no statements</text>
   </g>
-  <path d="M 456 288 L 456 310 L 129 310 L 129 380" fill="none" stroke="var(--muted)" stroke-width="1.2"/>
-  <polygon points="129,380 124,370 134,370" fill="var(--muted)"/>
-  <text x="139" y="372" font-size="10.5" fill="var(--soft)" class="mono">SELECT 5 · UPDATE 1</text>
-  <path d="M 772 288 L 772 328 L 379 328 L 379 380" fill="none" stroke="var(--muted)" stroke-width="1.2"/>
-  <polygon points="379,380 374,370 384,370" fill="var(--muted)"/>
-  <text x="389" y="372" font-size="10.5" fill="var(--soft)" class="mono">INSERT 1 · SELECT 3</text>
-  <line x1="24" y1="524" x2="876" y2="524" stroke="var(--rule)" stroke-width="1"/>
-  <text x="24" y="548" font-size="11.5" fill="var(--muted)" class="mono">7 calls across 5 trace ids</text>
-  <text x="24" y="568" font-size="11.5" fill="var(--muted)" class="mono">shared trace id is the only thing that joins services</text>
-  <text x="24" y="588" font-size="11.5" fill="var(--muted)" class="mono">shared tables: none</text>
-  <text x="24" y="608" font-size="11.5" fill="var(--muted)" class="mono">operations below each service come from the statement log, not from the schema</text>
+  <g>
+    <rect x="316" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="324" y="333" font-size="9.5" fill="var(--ink)" class="mono">GET /api/customers/{…</text>
+    <text x="324" y="349" font-size="9" fill="var(--soft)" class="mono">customers 4×</text>
+  </g>
+  <g>
+    <rect x="462" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="470" y="333" font-size="9.5" fill="var(--ink)" class="mono">GET /api/customers</text>
+    <text x="470" y="349" font-size="9" fill="var(--soft)" class="mono">customers 2×</text>
+  </g>
+  <g>
+    <rect x="608" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="616" y="333" font-size="9.5" fill="var(--ink)" class="mono">GET /api/orders/{id}</text>
+    <text x="616" y="349" font-size="9" fill="var(--soft)" class="mono">orders 1×</text>
+  </g>
+  <g>
+    <rect x="754" y="314" width="138" height="48" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="762" y="333" font-size="9.5" fill="var(--ink)" class="mono">POST /api/orders</text>
+    <text x="762" y="349" font-size="9" fill="var(--soft)" class="mono">orders 2×</text>
+  </g>
+  <g>
+    <rect x="24" y="408" width="210" height="74" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="40" y="434" font-size="14.5" font-weight="600">table customers</text>
+    <text x="40" y="454" font-size="11" fill="var(--muted)">used by customer-svc</text>
+    <text x="40" y="476" font-size="11.5" fill="var(--muted)">SELECT 5 · UPDATE 1</text>
+  </g>
+  <g>
+    <rect x="274" y="408" width="210" height="74" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="290" y="434" font-size="14.5" font-weight="600">table orders</text>
+    <text x="290" y="454" font-size="11" fill="var(--muted)">used by order-svc</text>
+    <text x="290" y="476" font-size="11.5" fill="var(--muted)">INSERT 1 · SELECT 3</text>
+  </g>
+  <path d="M 531 362 L 531 394 L 129 394" fill="none" stroke="var(--muted)" stroke-width="0.9" opacity="0.55"/>
+  <polygon points="129,408 125,394 133,394" fill="var(--muted)" opacity="0.55"/>
+  <path d="M 385 362 L 385 394 L 129 394" fill="none" stroke="var(--muted)" stroke-width="0.9" opacity="0.55"/>
+  <polygon points="129,408 125,394 133,394" fill="var(--muted)" opacity="0.55"/>
+  <path d="M 677 362 L 677 384 L 379 384" fill="none" stroke="var(--muted)" stroke-width="0.9" opacity="0.55"/>
+  <polygon points="379,408 375,384 383,384" fill="var(--muted)" opacity="0.55"/>
+  <path d="M 823 362 L 823 384 L 379 384" fill="none" stroke="var(--muted)" stroke-width="0.9" opacity="0.55"/>
+  <polygon points="379,408 375,384 383,384" fill="var(--muted)" opacity="0.55"/>
+  <line x1="24" y1="536" x2="876" y2="536" stroke="var(--rule)" stroke-width="1"/>
+  <text x="24" y="560" font-size="11.5" fill="var(--muted)" class="mono">7 calls across 5 trace ids</text>
+  <text x="24" y="580" font-size="11.5" fill="var(--muted)" class="mono">shared trace id is the only thing that joins services</text>
+  <text x="24" y="600" font-size="11.5" fill="var(--muted)" class="mono">shared tables: none</text>
+  <text x="24" y="620" font-size="11.5" fill="var(--muted)" class="mono">the tables under each chip come from the statement log, not from the schema</text>
 </svg>
 <figcaption><strong>Figure 1.</strong> Every box was discovered by reading source files, and every arrow was
 counted from trace ids shared between services in the call log. A service that appears with no arrow either

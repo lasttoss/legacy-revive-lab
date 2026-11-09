@@ -83,6 +83,50 @@ def table_access(root: Path) -> dict[tuple[str, str], Counter]:
     return out
 
 
+def trace_endpoints(root: Path) -> dict[tuple[str, str], str]:
+    """(trace, service) -> the endpoint that service served in that trace.
+
+    This is the join that makes endpoint-to-table possible at all: the statement log knows the trace and the
+    service, the call log knows the path, and a shared trace id ties them together.
+    """
+    log = root / "samples/rpc.log"
+    if not log.exists():
+        log = ROOT / "samples/rpc.log"
+    out: dict[tuple[str, str], str] = {}
+    for line in log.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        svc = r.get("service")
+        path = r.get("path")
+        if svc and path:
+            out.setdefault((r["trace"], svc), f"{r.get('method', 'GET')} {re.sub(r'/\d+', '/{id}', path.split('?')[0])}")
+    return out
+
+
+def endpoint_tables(root: Path) -> dict[str, dict[str, Counter]]:
+    """endpoint -> table -> {SELECT: n, INSERT: n, ...}, joined on (trace, service)."""
+    te = trace_endpoints(root)
+    log = root / "samples/sql.log"
+    out: dict[str, dict[str, Counter]] = defaultdict(lambda: defaultdict(Counter))
+    if not log.exists():
+        return out
+    for line in log.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        ep = te.get((r["trace"], r.get("service", "")))
+        if not ep:
+            continue
+        sql = r.get("sql", "") or ""
+        for op, pattern in SQL_OPS:
+            m = pattern.match(sql)
+            if m:
+                out[ep][m.group(1).lower()][op] += 1
+                break
+    return out
+
+
 def box(x: int, y: int, w: int, h: int, title: str, sub: str, facts: list[str], accent: bool) -> str:
     fill = "var(--accent-tint)" if accent else "var(--paper-2)"
     stroke = "var(--accent)" if accent else "var(--rule-solid)"
@@ -116,6 +160,7 @@ def main() -> int:
     pair, per_trace, exchange = edges(root, set(names))
 
     access = table_access(root)
+    ep_tables = endpoint_tables(root)
     access_tables = sorted({t for (_, t) in access})
     declared_tables = sorted({t for s in svc for t in s["tables"]} | set(access_tables))
 
@@ -170,9 +215,31 @@ def main() -> int:
                          f'  <text x="{(ax + bx) // 2 + W // 2}" y="{lane - 8}" font-size="11" '
                          f'fill="var(--soft)" text-anchor="middle" class="mono">{plural(count)}</text>')
 
+    # ---- endpoint tier: one band of chips, ordered by service, so the join is visible
+    ew, eh, egap = 138, 48, 8
+    ep_pos: dict[str, tuple[int, int]] = {}
+    ep_row_y = y0 + H + 26
+    flat: list[tuple[int, str]] = []
+    for i, n in enumerate(order):
+        for s2 in svc:
+            if s2["module"] == n:
+                flat += [(i, f"{e['method']} {e['path']}") for e in s2["endpoints"]]
+    for k, (_, ep) in enumerate(flat[:6]):
+        cx = 24 + k * (ew + egap)
+        cy = ep_row_y
+        ep_pos[ep] = (cx, cy)
+        touched = ep_tables.get(ep, {})
+        ep_short = ep if len(ep) <= 21 else ep[:20] + "…"
+        line2 = " · ".join(f"{t} {sum(c.values())}×" for t, c in sorted(touched.items())) or "no statements"
+        parts.append(f"""  <g>
+    <rect x="{cx}" y="{cy}" width="{ew}" height="{eh}" rx="2" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="{cx+8}" y="{cy+19}" font-size="9.5" fill="var(--ink)" class="mono">{ep_short}</text>
+    <text x="{cx+8}" y="{cy+35}" font-size="9" fill="var(--soft)" class="mono">{line2[:26]}</text>
+  </g>""")
+
     # ---- table row: who reads and writes what
     TW, TH, TGAP = 210, 74, 40
-    row_y = y0 + H + 92
+    row_y = y0 + H + 120
     tx0 = 24
     tpos = {t: (tx0 + i * (TW + TGAP), row_y) for i, t in enumerate(declared_tables)}
     owners: dict[str, set[str]] = defaultdict(set)
@@ -185,53 +252,49 @@ def main() -> int:
         for (svc_name, table), c in access.items():
             if table == t:
                 ops.update(c)
-        ops_txt = " · ".join(f"{k} {v}" for k, v in sorted(ops.items())) or "declared, never accessed in the sample"
+        ops_txt = " · ".join(f"{k} {v}" for k, v in sorted(ops.items())) or "declared, never accessed"
         owner_txt = ", ".join(sorted(owners.get(t) or {s["module"] for s in svc if t in s["tables"]})) or "unknown"
-        shared_flag = "  ← shared by 2 services" if len(owners.get(t, set())) > 1 else ""
+        shared_flag = " ← shared by 2 services" if len(owners.get(t, set())) > 1 else ""
         parts.append(box(x, y, TW, TH, f"table {t}", f"used by {owner_txt}{shared_flag}",
                          [ops_txt], accent=False))
 
-    # service -> table edges, labelled with the operations observed
-    for lane_i, ((svc_name, table), c) in enumerate(sorted(access.items())):
-        if svc_name not in pos or table not in tpos:
+    # endpoint -> table: thin lines, because the chip above already says what it does
+    for ep, tables in sorted(ep_tables.items()):
+        if ep not in ep_pos:
             continue
-        sx, sy = pos[svc_name]
-        tx, ty = tpos[table]
-        start_x = sx + W // 2
-        end_x = tx + TW // 2
-        if abs(start_x - end_x) < 4:
-            line = (f'  <line x1="{start_x}" y1="{sy + H}" x2="{end_x}" y2="{ty}" stroke="var(--muted)" '
-                    f'stroke-width="1.4"/>\n  <polygon points="{end_x},{ty} {end_x-5},{ty-10} {end_x+5},{ty-10}" '
-                    f'fill="var(--muted)"/>')
-        else:
-            lane = sy + H + 22 + lane_i * 18
-            line = (f'  <path d="M {start_x} {sy + H} L {start_x} {lane} L {end_x} {lane} '
-                    f'L {end_x} {ty}" fill="none" stroke="var(--muted)" stroke-width="1.2"/>\n'
-                    f'  <polygon points="{end_x},{ty} {end_x-5},{ty-10} {end_x+5},{ty-10}" fill="var(--muted)"/>')
-        label = " · ".join(f"{k} {v}" for k, v in sorted(c.items()))
-        # label beside the arrow head, so it can never run off the canvas on the right-hand service
-        parts.append(line + f'\n  <text x="{end_x + 10}" y="{ty - 8}" font-size="10.5" '
-                            f'fill="var(--soft)" class="mono">{label}</text>')
+        cx, cy = ep_pos[ep]
+        for t in sorted(tables):
+            if t not in tpos:
+                continue
+            tx, ty = tpos[t]
+            ex, ey = cx + ew // 2, cy + eh
+            mx = tx + TW // 2
+            # one bus per table, at its own height, so two tables never look like one rail
+            bus = ty - 14 - 10 * declared_tables.index(t)
+            parts.append(f'  <path d="M {ex} {ey} L {ex} {bus} L {mx} {bus}" fill="none" '
+                         f'stroke="var(--muted)" stroke-width="0.9" opacity="0.55"/>\n'
+                         f'  <polygon points="{mx},{ty} {mx-4},{bus} {mx+4},{bus}" fill="var(--muted)" '
+                         f'opacity="0.55"/>')
 
     notes = [f"{sum(pair.values())} calls across {len(per_trace)} trace ids",
              "shared trace id is the only thing that joins services",
              f"shared tables: {', '.join(shared_tables) if shared_tables else 'none'}",
-             "operations below each service come from the statement log, not from the schema"]
+             "the tables under each chip come from the statement log, not from the schema"]
 
-    svg = [f'<svg id="system" viewBox="0 0 900 620" width="900" height="620" role="img" aria-labelledby="t d">',
+    svg = [f'<svg id="system" viewBox="0 0 900 760" width="900" height="760" role="img" aria-labelledby="t d">',
            '  <title id="t">Three related services: who calls whom, from the trace ids</title>',
            '  <desc id="d">Each box is a Spring service discovered in the tree, with its endpoint count, '
            'tables and test files. Arrows are call edges counted from shared trace ids in the call log. '
            'Services that exchange calls are connected; the number on each arrow is how often it happened '
            'in the sample.</desc>',
-           '  <rect x="0" y="0" width="900" height="620" fill="var(--paper)"/>',
+           '  <rect x="0" y="0" width="900" height="760" fill="var(--paper)"/>',
            '  <text x="24" y="40" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">'
-           'SERVICES, CALL EDGES AND TABLE ACCESS — ALL FROM LOGS</text>',
+           'SERVICES → ENDPOINTS → TABLES, EVERY LINE FROM A LOG</text>',
            '  <line x1="24" y1="52" x2="876" y2="52" stroke="var(--rule)" stroke-width="1"/>']
     svg += parts
-    svg += ['  <line x1="24" y1="524" x2="876" y2="524" stroke="var(--rule)" stroke-width="1"/>']
+    svg += ['  <line x1="24" y1="536" x2="876" y2="536" stroke="var(--rule)" stroke-width="1"/>']
     for i, n in enumerate(notes):
-        svg.append(f'  <text x="24" y="{548+i*20}" font-size="11.5" fill="var(--muted)" class="mono">{n}</text>')
+        svg.append(f'  <text x="24" y="{560+i*20}" font-size="11.5" fill="var(--muted)" class="mono">{n}</text>')
     svg.append('</svg>')
 
     html = f'''<!DOCTYPE html>
@@ -272,6 +335,13 @@ is printed next to each edge instead of a guess.</figcaption>
     for s in svc:
         md.append(f"- `{s['module']}` — {len(s['endpoints'])} endpoints, tables "
                   f"{', '.join(s['tables']) or 'none'}, {s['test_files']} test file(s)")
+    md += ["", "## Endpoint to table", ""]
+    ep_lines = []
+    for ep, tables in sorted(ep_tables.items()):
+        parts_txt = ", ".join(f"{t} ({', '.join(f'{k} {v}' for k, v in sorted(c.items()))})"
+                              for t, c in sorted(tables.items()))
+        ep_lines.append(f"- `{ep}` → {parts_txt}")
+    md += ep_lines or ["- none: no statement carried a trace id that maps to an endpoint"]
     md += ["", "## Call edges", ""]
     md += [f"- `{a}` → `{b}` — {c} call(s): " + ", ".join(sorted(exchange[f'{a}->{b}']))
            for (a, b), c in sorted(pair.items())] or ["- none: no shared trace id between services"]

@@ -90,25 +90,28 @@ make system ROOT=/path/to/checkout      # services + call edges, generated
 make system                             # the bundled three-service example by default
 ```
 
-![Three services with call edges and table access: api-gateway calls customer-svc and order-svc; customer-svc and order-svc call each other; customer-svc reads and updates customers, order-svc reads and inserts orders](docs/figures/system-3-services.png)
+![Three services: call edges between api-gateway, customer-svc and order-svc; six endpoint chips with the tables each one touches; two table boxes with the operations counted on them](docs/figures/system-3-services.png)
 
-**Figure 2.** One picture, three questions answered, nothing drawn by hand. **Boxes** come from
-`kit/discover.py` (`@RestController`, `@Entity`, `@Table`, `src/test`). **Call edges** come from counting
-shared trace ids per caller/callee pair. **Table access** comes from the statement log, and every edge is
-labelled with what it actually did — `SELECT 5 · UPDATE 1` on `customers`, `INSERT 1 · SELECT 3` on `orders`.
-A table that no statement touches would still appear as *declared, never accessed in the sample*, which is a
-different fact from "does not exist" and is treated as such.
+**Figure 2.** One picture, three tiers, no hand drawing anywhere.
 
-Read it as a change-impact picture: changing the `customers` table reaches `customer-svc` only, while changing
-a call edge between `order-svc` and `customer-svc` reaches both services and the gateway above them.
-Regenerate and diff after a change; an edge that disappears is a call path that was removed — the sort of
-change that breaks a release quietly.
+```
+services    kit/discover.py     @RestController · @Entity · @Table · src/test in each module's source
+call edges  samples/rpc.log     caller→callee pairs counted per shared trace id
+endpoint→table  samples/sql.log joined to rpc.log on (trace, service) → endpoint, then parsed per statement
+```
+
+The endpoint tier is the tier that makes the picture useful for change impact. `GET /api/customers/{id}`
+carries `customers 4×` on its chip, so changing that table means re-running the recordings for that endpoint.
+`GET /api/ping` says `no statements`, which is a different fact from "unknown" and is labelled as such.
 
 **Counts are observations, not expectations.** `2 calls` means two calls carried a shared trace id in the
-sample; it does not mean the system makes two calls.
+sample. `customers 4×` means four statements in the sample touched that table from that endpoint. Neither is
+a claim about production volume.
 
-The same run writes `docs/SYSTEM.md` (greppable) and `out/system.json` (machine-readable), so a reader, a
-reviewer and a tool all consume one artifact instead of three that disagree.
+**The tier also caught something.** `GET /api/orders/by-customer/{id}` appears in the traces but is not
+declared in `order-svc`'s controller — a call path that exists in traffic and not in the source of the service
+that served it. A diagram drawn from code would have missed it; this one shows it because the join is on
+traces, and the greppable copy in `docs/SYSTEM.md` lists it next to the declared endpoints.
 
 ## A repository with several services: one path is the only input
 
