@@ -86,6 +86,7 @@ outside the pipeline: it reads the artifacts, it may only rank and suggest, and 
 changing a single test, map or coverage point.
 
 ```bash
+make advise-prompt    # 9 deterministic checks on the prompt contract — no key, no request
 make advise-dry       # print the exact prompt, its size and its token estimate — no key, no request
 make advise-fixture   # replay a saved response through validate + render — no key, no request
 make advise           # one real call against any OpenAI-compatible endpoint
@@ -105,7 +106,24 @@ non-OpenAI gateway: `response_format` is not always supported (the client falls 
 and the default `urllib` agent can be refused with `403 error code: 1010` — so the client sends an explicit
 `User-Agent`. Nothing about a provider is committed to this repository; bring your own.
 
-Check the direction locally before paying for it. `--dry-run` on this snapshot:
+**A local run has one job: does the wiring work, and does the prompt say what it must say.** Not "is the
+advice good" — that needs a person reading `docs/ADVICE.md`. `make advise-prompt` answers the first question
+without a network call:
+
+```
+prompt: 2672 chars ≈ 668 tokens
+  PASS role split          PASS output schema
+  PASS no invention        PASS citation contract
+  PASS evidence only       PASS rank only
+  PASS refusal path        PASS bounded size
+  PASS no secret
+  evidence ids: 34 · unrecognised tokens in the pack: 0
+```
+
+Nine properties, each one an assertion on the prompt text, so a future edit that quietly drops "do not
+invent facts" or the `cites` contract turns the build red instead of producing confident nonsense.
+
+`--dry-run` on this snapshot:
 
 ```
 pack 1233 chars · prompt 2177 chars ≈ 544 tokens   (gpt-4o-mini: well under a cent per run)

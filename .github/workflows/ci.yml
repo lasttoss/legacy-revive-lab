@@ -38,6 +38,7 @@ jobs:
       # that the committed advice file is still a suggestion, not a gate.
       - name: AI advisor, offline only
         run: |
+          python3 kit/advise.py --check-prompt
           python3 kit/advise.py --dry-run
           python3 kit/advise.py --check
 
