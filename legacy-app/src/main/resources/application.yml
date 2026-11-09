@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:target/legacy.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: com.example.legacy.db.LegacySQLiteDialect
+    defer-datasource-initialization: true          # Boot 2.5+: data.sql after Hibernate DDL
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate.format_sql: false
+  sql:
+    init:
+      mode: always
+server:
+  port: 8080
+logging:
+  level:
+    org.hibernate.SQL: info

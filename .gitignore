@@ -1,0 +1,3 @@
+legacy-app/target/
+*.db
+__pycache__/
