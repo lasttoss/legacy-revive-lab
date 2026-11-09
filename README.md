@@ -57,6 +57,7 @@ samples/rpc.log      11 cross-service calls       -> service map, endpoint->endp
 | `out/CHANGED-IMPACT.md` | `make changed-git` | this diff touches these endpoints, tables, callers, recordings |
 | `docs/SPANS.md` | `make spans` | what the test run actually executed, and whether the maps agree |
 | `docs/MODULES.md` | `make modules` | which Spring services a repository contains, and what each one owns |
+| `docs/SYSTEM.html` | `make system` | one diagram: services, endpoints, tables, call edges counted from traces |
 
 ## Measured on this snapshot
 
@@ -81,6 +82,24 @@ generated artifacts 11 markdown files + 1 json, all reproducible
 
 Coverage went 84.9% -> 89.2% with one change: deleting the class nothing referenced. That is the cheapest
 coverage win in any legacy codebase, and the inventory finds it automatically.
+
+## One diagram for the whole repository
+
+```bash
+make system ROOT=/path/to/checkout      # services + call edges, generated
+make system                             # the bundled three-service example by default
+```
+
+![Three services: api-gateway calls customer-svc and order-svc; customer-svc and order-svc call each other; 7 calls across 5 trace ids](docs/figures/system-3-services.png)
+
+**Figure 2.** Generated from the tree and the call log, not drawn. Boxes come from `kit/discover.py`
+(`@RestController`, `@Entity`, `src/test`), arrows come from counting shared trace ids per caller/callee pair.
+Each label is the number of calls observed, so an empty edge and a missing edge are visibly different — the
+diagram reports what the sample shows and refuses to imply more. Regenerate after a change and diff; if an
+edge disappears, a call path was removed, and that is exactly the sort of change that breaks a release.
+
+The same run writes `docs/SYSTEM.md` (greppable) and `out/system.json` (machine-readable), so a reader, a
+reviewer and a tool all consume one artifact instead of three that disagree.
 
 ## A repository with several services: one path is the only input
 
