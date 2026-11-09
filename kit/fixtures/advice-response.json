@@ -1,0 +1,17 @@
+{
+  "summary": "The service is testable but not observable: the highest-risk item is the swallowed exception, because a failed write looks like success.",
+  "suggestions": [
+    {"rank": 1, "action": "Replace the swallowed exception in createOrder with an error response",
+     "why": "a failed write currently returns HTTP 200, so the caller cannot tell success from failure",
+     "cites": ["F3", "docs/ERRORS.md"]},
+    {"rank": 2, "action": "Move the fee percentage out of the literal and into configuration",
+     "why": "the fee is a pricing rule that lives in code; every change becomes a deploy",
+     "cites": ["F2"]},
+    {"rank": 3, "action": "Add a test for the customer endpoint with an unknown id",
+     "why": "the current behaviour returns an empty body with status 200, which no client can act on",
+     "cites": ["F1", "GET /api/customers/{id}"]},
+    {"rank": 4, "action": "Reduce latency by 40% by caching everything",
+     "why": "a cache would help",
+     "cites": ["docs/INVENTORY.md"]}
+  ]
+}

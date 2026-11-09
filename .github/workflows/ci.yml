@@ -34,6 +34,13 @@ jobs:
       - name: Verify (tests + JaCoCo 80% floor + ratchet)
         run: mvn -B -Dmaven.repo.local=$HOME/.m2 verify --file legacy-app/pom.xml
 
+      # The AI step is optional, so CI never calls it — it only proves the prompt builds offline and
+      # that the committed advice file is still a suggestion, not a gate.
+      - name: AI advisor, offline only
+        run: |
+          python3 kit/advise.py --dry-run
+          python3 kit/advise.py --check
+
       - name: Coverage gate
         run: python3 kit/coverage_gate.py
 

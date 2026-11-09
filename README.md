@@ -79,6 +79,40 @@ generated artifacts 11 markdown files + 1 json, all reproducible
 Coverage went 84.9% -> 89.2% with one change: deleting the class nothing referenced. That is the cheapest
 coverage win in any legacy codebase, and the inventory finds it automatically.
 
+## Optional: an AI on top — never inside the numbers
+
+Everything above is deterministic. The advisor is the one place a model may look, and it is deliberately
+outside the pipeline: it reads the artifacts, it may only rank and suggest, and it can be removed without
+changing a single test, map or coverage point.
+
+```bash
+make advise-dry       # print the exact prompt, its size and its token estimate — no key, no request
+make advise-fixture   # replay a saved response through validate + render — no key, no request
+make advise           # one real call: OPENAI_API_KEY=... make advise
+```
+
+Check the direction locally before paying for it. `--dry-run` on this snapshot:
+
+```
+pack 1233 chars · prompt 2177 chars ≈ 544 tokens   (gpt-4o-mini: well under a cent per run)
+```
+
+**Two guardrails, enforced in code, not in the prompt:**
+
+```
+citation check   every suggestion must cite an id that exists in the pack (endpoint, F1..F6, E-<fp>, artifact)
+                 unknown citation -> suggestion dropped, and printed
+number check     every number in a suggestion must already exist in the pack
+                 invented metric -> suggestion dropped, and printed
+```
+
+The fixture proves both: three suggestions survive, and *"reduce latency by 40%"* is dropped because `40`
+appears nowhere in the evidence. A model that invents a percentage cannot get it into `docs/ADVICE.md`.
+
+**What it is not** (also written at the bottom of every generated advice file): not a measurement, not part
+of the gate, and deleting it changes nothing about the tests. CI runs `--dry-run` and `--check` only, so the
+build never depends on an API key, a network call or a provider's uptime.
+
 ## What the evidence found in the code
 
 All six are in [`docs/FINDINGS.md`](docs/FINDINGS.md) with the artifact that proves each one:
