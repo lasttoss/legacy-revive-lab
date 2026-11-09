@@ -13,6 +13,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <properties>
     <java.version>8</java.version>
+    <spring-cloud.version>2021.0.9</spring-cloud.version>
     <jacoco.version>0.8.11</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -21,8 +22,22 @@
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
     <dependency><groupId>org.xerial</groupId><artifactId>sqlite-jdbc</artifactId><version>3.44.1.0</version></dependency>
     
+    <!-- Tracing in tests: real spans from a real run, not a diagram drawn by hand.
+         Sleuth 3.1 is the Boot 2.7 / Java 8 tracing layer; the test writes spans to samples/spans.log. -->
+    <dependency><groupId>org.springframework.cloud</groupId><artifactId>spring-cloud-starter-sleuth</artifactId></dependency>
+
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
   </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type><scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <build>
     <plugins>
       <plugin>

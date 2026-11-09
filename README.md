@@ -55,6 +55,7 @@ samples/rpc.log      11 cross-service calls       -> service map, endpoint->endp
 | `GoldenMasterTest.java` | `make tests` | one test per recording, generated |
 | `docs/API.md` | `make docs` | per-endpoint contract with real request/response |
 | `out/CHANGED-IMPACT.md` | `make changed-git` | this diff touches these endpoints, tables, callers, recordings |
+| `docs/SPANS.md` | `make spans` | what the test run actually executed, and whether the maps agree |
 
 ## Measured on this snapshot
 
@@ -79,6 +80,57 @@ generated artifacts 11 markdown files + 1 json, all reproducible
 
 Coverage went 84.9% -> 89.2% with one change: deleting the class nothing referenced. That is the cheapest
 coverage win in any legacy codebase, and the inventory finds it automatically.
+
+## Traces, not drawings: the map is rebuilt from the test run
+
+The suite writes `samples/spans.log` while it runs — one line per span, with `trace`, `span`, `parent`,
+`method`, `path`, `status` and `duration_us`. `kit/spanmap.py` turns those spans into `docs/SPANS.md` and,
+more importantly, checks the maps against them.
+
+```bash
+make spans                            # rebuild docs/SPANS.md from the traces
+python3 kit/spanmap.py --check        # documented endpoints must equal executed endpoints
+```
+
+```
+traces=20 spans=40 endpoints_ran=5 endpoints_documented=5
+RESULT spans=ok
+```
+
+Two failures this catches that no amount of reading catches:
+
+```
+ran but not documented      a new endpoint exists and docs/API.md does not know it
+documented but never ran    docs/API.md describes an endpoint the code no longer executes
+```
+
+Counting is per `(trace, call)`, not per span: a client span and its server span describe the same request,
+so adding them would inflate the traffic — that inflation is exactly how a "most used endpoint" ranking goes
+wrong.
+
+| Call | Runs | p50 | max |
+|---|---|---|---|
+| `GET /api/customers/{id}` | 7 | 4.9 ms | 324.0 ms |
+| `GET /api/legacy/ping` | 1 | 4.3 ms | 4.6 ms |
+| `GET /api/orders/{id}` | 6 | 4.1 ms | 12.7 ms |
+| `GET /api/reports/top` | 3 | 3.8 ms | 30.2 ms |
+| `POST /api/orders` | 3 | 7.5 ms | 52.1 ms |
+
+Those are a developer machine running the suite. They describe shape, not production latency — the table
+says so in its own header, because a number without its context becomes a promise someone else quotes.
+
+**Why not Testcontainers here.** Testcontainers earns its keep when a test needs a *real database* container.
+This app is SQLite, so it would prove nothing. What was worth proving is that the packaged jar starts and
+answers, and that is `make smoke`: build the image, run it, curl two endpoints, stop it, print the answer.
+
+```
+$ make smoke
+OK  GET /api/legacy/ping -> {"ok":true}
+OK  GET /api/customers/1 -> {"id":1,"name":"Alice",...
+```
+
+For a Postgres/MySQL project the same recording path works unchanged: point the recorder at the app the
+Testcontainers run started, and the spans and the endpoint-to-table map come out of that run instead.
 
 ## When someone changes code: what else is affected
 

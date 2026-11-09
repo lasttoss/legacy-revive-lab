@@ -47,6 +47,13 @@ jobs:
         if: github.event_name == 'pull_request'
         run: python3 kit/changed.py --git | tee -a "$GITHUB_STEP_SUMMARY"
 
+      # The suite writes samples/spans.log. Rebuild the map from the traces and fail when a documented
+      # endpoint never executed, or an executed call is undocumented.
+      - name: Spans agree with the maps
+        run: |
+          python3 kit/spanmap.py            # regenerate from this run's traces
+          python3 kit/spanmap.py --check    # deterministic: documented endpoints == executed endpoints
+
       - name: Coverage gate
         run: python3 kit/coverage_gate.py
 

@@ -4,7 +4,7 @@ IMAGE := maven:3.9-eclipse-temurin-8
 MVN := docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e MAVEN_OPTS="-Dmaven.repo.local=/tmp/m2" \
        -v "$(PWD):/w" -v "$$HOME/.m2:/tmp/m2" -w /w/legacy-app $(IMAGE) mvn -B -Dmaven.repo.local=/tmp/m2
 
-.PHONY: help changed changed-git maps record tests verify docs coverage advise-prompt advise-dry advise-fixture advise advise-check all clean
+.PHONY: help changed changed-git maps record tests verify docs coverage spans smoke advise-prompt advise-dry advise-fixture advise advise-check all clean
 
 help:
 	@echo "make changed FILES=\"a.java b.java\"   what is affected by these files -> out/CHANGED-IMPACT.md"
@@ -14,6 +14,8 @@ help:
 	@echo "make tests      generate the JUnit suite from the recordings (phase B)"
 	@echo "make verify     run the suite + JaCoCo; fails under 80% (phase C)"
 	@echo "make coverage   coverage report + ratchet check (make coverage UPDATE=1 to raise the baseline)"
+	@echo "make spans      docs/SPANS.md from the traces the tests wrote; --check proves the maps match"
+	@echo "make smoke      build the jar in a container, run it, curl it, stop it"
 	@echo "make docs       regenerate docs/API.md and docs/FINDINGS.md from the recordings"
 	@echo "make advise-prompt  deterministic review of the prompt contract (9 checks); no request, no key"
 	@echo "make advise-dry     print the AI prompt + token estimate; no request, no key"
@@ -44,6 +46,12 @@ verify:
 
 docs:
 	@python3 kit/gen_docs.py
+
+spans:
+	@python3 kit/spanmap.py
+
+smoke:
+	@bash kit/smoke_docker.sh
 
 coverage:
 	@python3 kit/coverage_gate.py $(if $(UPDATE),--update,)

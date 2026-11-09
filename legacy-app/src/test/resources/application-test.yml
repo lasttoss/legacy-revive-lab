@@ -1,0 +1,8 @@
+# Test profile: every request is traced, and the span handler writes samples/spans.log.
+spring:
+  sleuth:
+    sampler:
+      probability: 1.0
+logging:
+  level:
+    org.hibernate.SQL: debug

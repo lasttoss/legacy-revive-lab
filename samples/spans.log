@@ -1,0 +1,40 @@
+{"trace":"5d3916f36ed67a79","span":"5d3916f36ed67a79","parent":"","name":"GET","method":"GET","path":"/api/customers/1","status":"","duration_us":323969}
+{"trace":"5d3916f36ed67a79","span":"5d3916f36ed67a79","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/1","status":"","duration_us":257328}
+{"trace":"ada63764abfe6936","span":"ada63764abfe6936","parent":"","name":"GET","method":"GET","path":"/api/orders/1001","status":"","duration_us":12649}
+{"trace":"ada63764abfe6936","span":"ada63764abfe6936","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/1001","status":"","duration_us":12737}
+{"trace":"0a9a0ba5e050c4cd","span":"0a9a0ba5e050c4cd","parent":"","name":"GET","method":"GET","path":"/api/reports/top","status":"","duration_us":30200}
+{"trace":"0a9a0ba5e050c4cd","span":"0a9a0ba5e050c4cd","parent":"","name":"GET /api/reports/top","method":"GET","path":"/api/reports/top","status":"","duration_us":29361}
+{"trace":"c9909dcc1c47c346","span":"c9909dcc1c47c346","parent":"","name":"GET","method":"GET","path":"/api/customers/2","status":"","duration_us":5459}
+{"trace":"c9909dcc1c47c346","span":"c9909dcc1c47c346","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/2","status":"","duration_us":4634}
+{"trace":"4fbef2f5938f8f5b","span":"4fbef2f5938f8f5b","parent":"","name":"GET","method":"GET","path":"/api/orders/1002","status":"","duration_us":4420}
+{"trace":"4fbef2f5938f8f5b","span":"4fbef2f5938f8f5b","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/1002","status":"","duration_us":3791}
+{"trace":"5db4e65c8cebbb26","span":"5db4e65c8cebbb26","parent":"","name":"GET","method":"GET","path":"/api/orders/1003","status":"","duration_us":4491}
+{"trace":"5db4e65c8cebbb26","span":"5db4e65c8cebbb26","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/1003","status":"","duration_us":3738}
+{"trace":"94986b80f80f45c4","span":"94986b80f80f45c4","parent":"","name":"GET","method":"GET","path":"/api/customers/3","status":"","duration_us":5350}
+{"trace":"94986b80f80f45c4","span":"94986b80f80f45c4","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/3","status":"","duration_us":4766}
+{"trace":"e032248cefe80d1a","span":"e032248cefe80d1a","parent":"","name":"GET","method":"GET","path":"/api/customers/1","status":"","duration_us":6128}
+{"trace":"e032248cefe80d1a","span":"e032248cefe80d1a","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/1","status":"","duration_us":5609}
+{"trace":"fd8ee837465e17f2","span":"fd8ee837465e17f2","parent":"","name":"GET","method":"GET","path":"/api/orders/1001","status":"","duration_us":4760}
+{"trace":"fd8ee837465e17f2","span":"fd8ee837465e17f2","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/1001","status":"","duration_us":3576}
+{"trace":"2085b4fa9e244a8f","span":"2085b4fa9e244a8f","parent":"","name":"GET","method":"GET","path":"/api/legacy/ping","status":"","duration_us":4628}
+{"trace":"2085b4fa9e244a8f","span":"2085b4fa9e244a8f","parent":"","name":"GET /api/legacy/ping","method":"GET","path":"/api/legacy/ping","status":"","duration_us":3899}
+{"trace":"48c0331c30b3ea52","span":"48c0331c30b3ea52","parent":"","name":"GET","method":"GET","path":"/api/customers/1","status":"","duration_us":5253}
+{"trace":"48c0331c30b3ea52","span":"48c0331c30b3ea52","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/1","status":"","duration_us":4601}
+{"trace":"56b3badda27ec3bc","span":"56b3badda27ec3bc","parent":"","name":"GET","method":"GET","path":"/api/reports/top","status":"","duration_us":3810}
+{"trace":"56b3badda27ec3bc","span":"56b3badda27ec3bc","parent":"","name":"GET /api/reports/top","method":"GET","path":"/api/reports/top","status":"","duration_us":2980}
+{"trace":"877478263a0f6011","span":"877478263a0f6011","parent":"","name":"POST","method":"POST","path":"/api/orders","status":"","duration_us":52087}
+{"trace":"877478263a0f6011","span":"877478263a0f6011","parent":"","name":"POST /api/orders","method":"POST","path":"/api/orders","status":"","duration_us":50362}
+{"trace":"06adaea7b18e9f4d","span":"06adaea7b18e9f4d","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/999","status":"","duration_us":2308}
+{"trace":"06adaea7b18e9f4d","span":"06adaea7b18e9f4d","parent":"","name":"GET","method":"GET","path":"/api/customers/999","status":"","duration_us":3623}
+{"trace":"d6839a0def5a1e93","span":"d6839a0def5a1e93","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/999999","status":"","duration_us":2830}
+{"trace":"d6839a0def5a1e93","span":"d6839a0def5a1e93","parent":"","name":"GET","method":"GET","path":"/api/orders/999999","status":"","duration_us":4183}
+{"trace":"161b72e94dabc395","span":"161b72e94dabc395","parent":"","name":"POST","method":"POST","path":"/api/orders","status":"","duration_us":7099}
+{"trace":"161b72e94dabc395","span":"161b72e94dabc395","parent":"","name":"POST /api/orders","method":"POST","path":"/api/orders","status":"","duration_us":5401}
+{"trace":"c964415d771aebbb","span":"c964415d771aebbb","parent":"","name":"GET","method":"GET","path":"/api/reports/top","status":"","duration_us":3874}
+{"trace":"c964415d771aebbb","span":"c964415d771aebbb","parent":"","name":"GET /api/reports/top","method":"GET","path":"/api/reports/top","status":"","duration_us":3308}
+{"trace":"a2f547249e048041","span":"a2f547249e048041","parent":"","name":"POST","method":"POST","path":"/api/orders","status":"","duration_us":7987}
+{"trace":"a2f547249e048041","span":"a2f547249e048041","parent":"","name":"POST /api/orders","method":"POST","path":"/api/orders","status":"","duration_us":6200}
+{"trace":"56c3d1101a376b57","span":"56c3d1101a376b57","parent":"","name":"GET /api/customers/{id}","method":"GET","path":"/api/customers/999","status":"","duration_us":1971}
+{"trace":"56c3d1101a376b57","span":"56c3d1101a376b57","parent":"","name":"GET","method":"GET","path":"/api/customers/999","status":"","duration_us":3231}
+{"trace":"4881c288db6a5e10","span":"4881c288db6a5e10","parent":"","name":"GET","method":"GET","path":"/api/orders/1003","status":"","duration_us":4075}
+{"trace":"4881c288db6a5e10","span":"4881c288db6a5e10","parent":"","name":"GET /api/orders/{id}","method":"GET","path":"/api/orders/1003","status":"","duration_us":3610}
