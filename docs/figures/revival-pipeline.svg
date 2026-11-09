@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" id="revival-pipeline-root" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="t d">
+  <title id="t">Legacy revival pipeline: logs become maps and documents, the running app becomes recordings, recordings become tests</title>
+  <desc id="d">Three lanes. The upper lane derives documentation from four log files with no build. The middle lane replays sampled requests against the running app, stores twenty recordings, generates twenty tests from them and measures coverage. The lower lane is CI: regenerate and diff, so a stale document fails the build, then verify against an 80 percent floor and a ratchet.</desc>
+  <defs>
+      <style>#revival-pipeline-root { --paper:#f5f5f5; --paper-2:#ececec; --ink:#2d3142; --muted:#4f5d75; --soft:#7a8399;
+    --rule:rgba(45,49,66,0.12); --rule-solid:#bfc0c0; --accent:#eb6c36;
+    --accent-tint:rgba(235,108,54,0.08); }
+      #revival-pipeline-root { font-family: Inter,system-ui,-apple-system,"Segoe UI",sans-serif; color: var(--ink); }
+      #revival-pipeline-root figure { margin:0;max-width:1000px; }
+      #revival-pipeline-root figcaption { margin-top:18px;font-size:13px;line-height:1.55;color:var(--muted);max-width:80ch; }
+      #revival-pipeline-root .mono { font-family:ui-monospace,"SF Mono",Menlo,monospace; }</style>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="500" fill="var(--paper)"/>
+
+  <!-- lane A -->
+  <text x="24" y="34" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">FROM LOGS — NO BUILD, NO APP RUNNING</text>
+  <line x1="24" y1="46" x2="936" y2="46" stroke="var(--rule)" stroke-width="1"/>
+
+  <g>
+    <rect x="24" y="66" width="126" height="56" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="38" y="90" font-size="12.5" font-weight="600" class="mono">access.log</text>
+    <text x="38" y="110" font-size="11" fill="var(--muted)">20 requests</text>
+  </g>
+  <g>
+    <rect x="158" y="66" width="126" height="56" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="172" y="90" font-size="12.5" font-weight="600" class="mono">sql.log</text>
+    <text x="172" y="110" font-size="11" fill="var(--muted)">10 stmts · trace ids</text>
+  </g>
+  <g>
+    <rect x="292" y="66" width="126" height="56" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="306" y="90" font-size="12.5" font-weight="600" class="mono">error.log</text>
+    <text x="306" y="110" font-size="11" fill="var(--muted)">6 events · 4 shapes</text>
+  </g>
+  <g>
+    <rect x="426" y="66" width="126" height="56" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="440" y="90" font-size="12.5" font-weight="600" class="mono">rpc.log</text>
+    <text x="440" y="110" font-size="11" fill="var(--muted)">11 calls · 4 services</text>
+  </g>
+
+  <line x1="560" y1="94" x2="592" y2="94" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="600,94 590,89 590,99" fill="var(--muted)"/>
+  <g>
+    <rect x="600" y="66" width="156" height="56" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="614" y="90" font-size="12.5" font-weight="600" class="mono">kit/*.py</text>
+    <text x="614" y="110" font-size="11" fill="var(--muted)">pure text in, text out</text>
+  </g>
+
+  <line x1="678" y1="122" x2="678" y2="152" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="678,160 673,150 683,150" fill="var(--muted)"/>
+
+  <rect x="24" y="160" width="912" height="100" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+  <text x="44" y="184" font-size="11" letter-spacing="0.08em" fill="var(--soft)" class="mono">docs/ — SIX ANSWERS</text>
+  <text x="44" y="208" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">INVENTORY.md</tspan> <tspan fill="var(--muted)">what is used, what is dead</tspan></text>
+  <text x="44" y="232" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">ENDPOINT-DB.md</tspan> <tspan fill="var(--muted)">which endpoint touches which table</tspan></text>
+  <text x="372" y="208" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">ERRORS.md</tspan> <tspan fill="var(--muted)">repeated failures, by fingerprint</tspan></text>
+  <text x="372" y="232" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">SERVICES.md</tspan> <tspan fill="var(--muted)">service index, traffic share</tspan></text>
+  <text x="672" y="208" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">SERVICE-MAP.md</tspan> <tspan fill="var(--muted)">endpoint to endpoint</tspan></text>
+  <text x="672" y="232" font-size="12" fill="var(--ink)"><tspan class="mono" font-weight="600">IMPACT.md</tspan> <tspan fill="var(--muted)">if X changes, what to re-check</tspan></text>
+
+  <!-- lane B -->
+  <text x="24" y="292" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">FROM THE RUNNING APP — RECORD, THEN GENERATE</text>
+  <line x1="24" y1="304" x2="936" y2="304" stroke="var(--rule)" stroke-width="1"/>
+
+  <g>
+    <rect x="24" y="322" width="164" height="62" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="38" y="346" font-size="12.5" font-weight="600" class="mono">legacy-app</text>
+    <text x="38" y="366" font-size="11" fill="var(--muted)">11 endpoints, unchanged</text>
+  </g>
+  <g>
+    <rect x="216" y="322" width="180" height="62" rx="3" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="230" y="346" font-size="12.5" font-weight="600" class="mono">Recorder</text>
+    <text x="230" y="366" font-size="11" fill="var(--muted)">the only spec that exists</text>
+  </g>
+  <g>
+    <rect x="424" y="322" width="164" height="62" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="438" y="346" font-size="12.5" font-weight="600" class="mono">golden/ ×20</text>
+    <text x="438" y="366" font-size="11" fill="var(--muted)">status + body, committed</text>
+  </g>
+  <g>
+    <rect x="616" y="322" width="164" height="62" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="630" y="346" font-size="12.5" font-weight="600" class="mono">20 tests</text>
+    <text x="630" y="366" font-size="11" fill="var(--muted)">generated, not edited</text>
+  </g>
+  <g>
+    <rect x="808" y="322" width="128" height="62" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+    <text x="822" y="346" font-size="12.5" font-weight="600" class="mono">89.2%</text>
+    <text x="822" y="366" font-size="11" fill="var(--muted)">lines covered</text>
+  </g>
+
+  <line x1="188" y1="353" x2="208" y2="353" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="216,353 206,348 206,358" fill="var(--muted)"/>
+  <line x1="396" y1="353" x2="416" y2="353" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="424,353 414,348 414,358" fill="var(--muted)"/>
+  <line x1="588" y1="353" x2="608" y2="353" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="616,353 606,348 606,358" fill="var(--muted)"/>
+  <line x1="780" y1="353" x2="800" y2="353" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="808,353 798,348 798,358" fill="var(--muted)"/>
+
+  <!-- lane C -->
+  <text x="24" y="422" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">CI — A STALE ARTIFACT IS A FAILED BUILD</text>
+  <line x1="24" y1="434" x2="936" y2="434" stroke="var(--rule)" stroke-width="1"/>
+
+  <rect x="24" y="450" width="912" height="40" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)"/>
+  <text x="44" y="475" font-size="12"><tspan class="mono" font-weight="600">regenerate → git diff --exit-code</tspan> <tspan fill="var(--muted)">docs and tests cannot drift ·</tspan> <tspan class="mono" font-weight="600">mvn verify</tspan> <tspan fill="var(--muted)">80% floor + ratchet baseline</tspan></text>
+</svg>

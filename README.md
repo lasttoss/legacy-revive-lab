@@ -21,6 +21,19 @@ git diff main..revival --stat       # exactly what was added, nothing hidden
 > three kinds of evidence — sampled traffic, SQL logs, error logs — and regenerating them is part of CI,
 > so they cannot drift.
 
+## How the pieces fit
+
+![Revival pipeline: four log files become six generated documents; the running app is replayed into twenty golden recordings that become twenty tests and a coverage number; CI regenerates everything and diffs it](docs/figures/revival-pipeline.png)
+
+**Figure 1.** Two independent sources of evidence and one closed loop. The upper lane needs no build and no
+running app: four log files become the inventory, the endpoint-to-table map, the error catalogue, the service
+index, the endpoint-to-endpoint map and the impact index. The middle lane replays twenty sampled requests
+against the app as it behaves today, stores the answers as goldens, and generates twenty tests from them —
+the first specification this service has ever had. The lower lane is what keeps both honest: CI regenerates
+every artifact and diffs it, so a document or a test that no longer matches the evidence fails the build
+instead of quietly misleading the next reader.
+Source: `docs/figures/revival-pipeline.html` (self-contained SVG).
+
 ## What gets produced, and from what
 
 ```
