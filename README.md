@@ -90,13 +90,22 @@ make system ROOT=/path/to/checkout      # services + call edges, generated
 make system                             # the bundled three-service example by default
 ```
 
-![Three services: api-gateway calls customer-svc and order-svc; customer-svc and order-svc call each other; 7 calls across 5 trace ids](docs/figures/system-3-services.png)
+![Three services with call edges and table access: api-gateway calls customer-svc and order-svc; customer-svc and order-svc call each other; customer-svc reads and updates customers, order-svc reads and inserts orders](docs/figures/system-3-services.png)
 
-**Figure 2.** Generated from the tree and the call log, not drawn. Boxes come from `kit/discover.py`
-(`@RestController`, `@Entity`, `src/test`), arrows come from counting shared trace ids per caller/callee pair.
-Each label is the number of calls observed, so an empty edge and a missing edge are visibly different — the
-diagram reports what the sample shows and refuses to imply more. Regenerate after a change and diff; if an
-edge disappears, a call path was removed, and that is exactly the sort of change that breaks a release.
+**Figure 2.** One picture, three questions answered, nothing drawn by hand. **Boxes** come from
+`kit/discover.py` (`@RestController`, `@Entity`, `@Table`, `src/test`). **Call edges** come from counting
+shared trace ids per caller/callee pair. **Table access** comes from the statement log, and every edge is
+labelled with what it actually did — `SELECT 5 · UPDATE 1` on `customers`, `INSERT 1 · SELECT 3` on `orders`.
+A table that no statement touches would still appear as *declared, never accessed in the sample*, which is a
+different fact from "does not exist" and is treated as such.
+
+Read it as a change-impact picture: changing the `customers` table reaches `customer-svc` only, while changing
+a call edge between `order-svc` and `customer-svc` reaches both services and the gateway above them.
+Regenerate and diff after a change; an edge that disappears is a call path that was removed — the sort of
+change that breaks a release quietly.
+
+**Counts are observations, not expectations.** `2 calls` means two calls carried a shared trace id in the
+sample; it does not mean the system makes two calls.
 
 The same run writes `docs/SYSTEM.md` (greppable) and `out/system.json` (machine-readable), so a reader, a
 reviewer and a tool all consume one artifact instead of three that disagree.

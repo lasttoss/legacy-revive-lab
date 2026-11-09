@@ -51,6 +51,38 @@ def edges(root: Path, services: set[str]) -> tuple[Counter, dict[str, int], dict
     return pair, {k: len(v) for k, v in traces.items()}, exchange
 
 
+# "select * from t" and "select a, b from t" are both reads of t, so the columns cannot be part of the match
+SQL_OPS = [
+    ("SELECT", re.compile(r"^\s*select\b.*?\bfrom\s+([a-zA-Z_][a-zA-Z0-9_]*)", re.I | re.S)),
+    ("INSERT", re.compile(r"^\s*insert\s+into\s+([a-zA-Z_][a-zA-Z0-9_]*)", re.I)),
+    ("UPDATE", re.compile(r"^\s*update\s+([a-zA-Z_][a-zA-Z0-9_]*)", re.I)),
+    ("DELETE", re.compile(r"^\s*delete\s+from\s+([a-zA-Z_][a-zA-Z0-9_]*)", re.I)),
+]
+
+
+def table_access(root: Path) -> dict[tuple[str, str], Counter]:
+    """(service, table) -> {SELECT: n, INSERT: n, ...} from the statement log.
+
+    The log is the only honest source: a repository can declare ten tables and read three, and the diagram
+    must show three.
+    """
+    log = root / "samples/sql.log"
+    out: dict[tuple[str, str], Counter] = defaultdict(Counter)
+    if not log.exists():
+        return out
+    for line in log.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        sql = r.get("sql", "") or ""
+        for op, pattern in SQL_OPS:
+            m = pattern.match(sql)
+            if m:
+                out[(r.get("service", ""), m.group(1).lower())][op] += 1
+                break
+    return out
+
+
 def box(x: int, y: int, w: int, h: int, title: str, sub: str, facts: list[str], accent: bool) -> str:
     fill = "var(--accent-tint)" if accent else "var(--paper-2)"
     stroke = "var(--accent)" if accent else "var(--rule-solid)"
@@ -83,13 +115,17 @@ def main() -> int:
     names = [s["module"] for s in svc]
     pair, per_trace, exchange = edges(root, set(names))
 
+    access = table_access(root)
+    access_tables = sorted({t for (_, t) in access})
+    declared_tables = sorted({t for s in svc for t in s["tables"]} | set(access_tables))
+
     shared = Counter(t for s in svc for t in s["tables"])
     shared_tables = {t: n for t, n in shared.items() if n > 1}
 
     # layout: left to right, gateway first when it exists
     order = sorted(names, key=lambda n: (0 if "gateway" in n else 1, n))
     W, GAP, H = 232, 84, 156
-    x0, y0 = 24, 96
+    x0, y0 = 24, 132
     pos = {n: (x0 + i * (W + GAP), y0) for i, n in enumerate(order)}
 
     parts = []
@@ -125,32 +161,77 @@ def main() -> int:
                 parts.append(arrow(ax, y1, bx + W, y2, plural(count)))
         else:
             # skips a service: route below the row, where no label lives
-            lane = ay + H + 26
-            parts.append(f'  <path d="M {ax + W // 2} {ay + H} L {ax + W // 2} {lane} L {bx + W // 2} {lane} '
-                         f'L {bx + W // 2} {by + H}" fill="none" stroke="var(--muted)" stroke-width="1.4"/>\n'
-                         f'  <polygon points="{bx + W // 2},{by + H} {bx + W // 2 - 5},{by + H + 10} '
-                         f'{bx + W // 2 + 5},{by + H + 10}" fill="var(--muted)"/>\n'
-                         f'  <text x="{(ax + bx) // 2 + W // 2}" y="{lane - 6}" font-size="11" '
+            # above the row: the space below belongs to the service-to-table edges
+            lane = ay - 34
+            parts.append(f'  <path d="M {ax + W // 2} {ay} L {ax + W // 2} {lane} L {bx + W // 2} {lane} '
+                         f'L {bx + W // 2} {by}" fill="none" stroke="var(--muted)" stroke-width="1.4"/>\n'
+                         f'  <polygon points="{bx + W // 2},{by} {bx + W // 2 - 5},{by - 10} '
+                         f'{bx + W // 2 + 5},{by - 10}" fill="var(--muted)"/>\n'
+                         f'  <text x="{(ax + bx) // 2 + W // 2}" y="{lane - 8}" font-size="11" '
                          f'fill="var(--soft)" text-anchor="middle" class="mono">{plural(count)}</text>')
+
+    # ---- table row: who reads and writes what
+    TW, TH, TGAP = 210, 74, 40
+    row_y = y0 + H + 92
+    tx0 = 24
+    tpos = {t: (tx0 + i * (TW + TGAP), row_y) for i, t in enumerate(declared_tables)}
+    owners: dict[str, set[str]] = defaultdict(set)
+    for (svc_name, table) in access:
+        owners[table].add(svc_name)
+
+    for t in declared_tables:
+        x, y = tpos[t]
+        ops = Counter()
+        for (svc_name, table), c in access.items():
+            if table == t:
+                ops.update(c)
+        ops_txt = " · ".join(f"{k} {v}" for k, v in sorted(ops.items())) or "declared, never accessed in the sample"
+        owner_txt = ", ".join(sorted(owners.get(t) or {s["module"] for s in svc if t in s["tables"]})) or "unknown"
+        shared_flag = "  ← shared by 2 services" if len(owners.get(t, set())) > 1 else ""
+        parts.append(box(x, y, TW, TH, f"table {t}", f"used by {owner_txt}{shared_flag}",
+                         [ops_txt], accent=False))
+
+    # service -> table edges, labelled with the operations observed
+    for lane_i, ((svc_name, table), c) in enumerate(sorted(access.items())):
+        if svc_name not in pos or table not in tpos:
+            continue
+        sx, sy = pos[svc_name]
+        tx, ty = tpos[table]
+        start_x = sx + W // 2
+        end_x = tx + TW // 2
+        if abs(start_x - end_x) < 4:
+            line = (f'  <line x1="{start_x}" y1="{sy + H}" x2="{end_x}" y2="{ty}" stroke="var(--muted)" '
+                    f'stroke-width="1.4"/>\n  <polygon points="{end_x},{ty} {end_x-5},{ty-10} {end_x+5},{ty-10}" '
+                    f'fill="var(--muted)"/>')
+        else:
+            lane = sy + H + 22 + lane_i * 18
+            line = (f'  <path d="M {start_x} {sy + H} L {start_x} {lane} L {end_x} {lane} '
+                    f'L {end_x} {ty}" fill="none" stroke="var(--muted)" stroke-width="1.2"/>\n'
+                    f'  <polygon points="{end_x},{ty} {end_x-5},{ty-10} {end_x+5},{ty-10}" fill="var(--muted)"/>')
+        label = " · ".join(f"{k} {v}" for k, v in sorted(c.items()))
+        # label beside the arrow head, so it can never run off the canvas on the right-hand service
+        parts.append(line + f'\n  <text x="{end_x + 10}" y="{ty - 8}" font-size="10.5" '
+                            f'fill="var(--soft)" class="mono">{label}</text>')
 
     notes = [f"{sum(pair.values())} calls across {len(per_trace)} trace ids",
              "shared trace id is the only thing that joins services",
-             f"shared tables: {', '.join(shared_tables) if shared_tables else 'none'}"]
+             f"shared tables: {', '.join(shared_tables) if shared_tables else 'none'}",
+             "operations below each service come from the statement log, not from the schema"]
 
-    svg = [f'<svg id="system" viewBox="0 0 900 470" width="900" height="470" role="img" aria-labelledby="t d">',
+    svg = [f'<svg id="system" viewBox="0 0 900 620" width="900" height="620" role="img" aria-labelledby="t d">',
            '  <title id="t">Three related services: who calls whom, from the trace ids</title>',
            '  <desc id="d">Each box is a Spring service discovered in the tree, with its endpoint count, '
            'tables and test files. Arrows are call edges counted from shared trace ids in the call log. '
            'Services that exchange calls are connected; the number on each arrow is how often it happened '
            'in the sample.</desc>',
-           '  <rect x="0" y="0" width="900" height="470" fill="var(--paper)"/>',
+           '  <rect x="0" y="0" width="900" height="620" fill="var(--paper)"/>',
            '  <text x="24" y="40" font-size="12" letter-spacing="0.09em" fill="var(--soft)" class="mono">'
-           'SERVICES AND CALL EDGES — FROM TRACES, NOT FROM A DRAWING</text>',
+           'SERVICES, CALL EDGES AND TABLE ACCESS — ALL FROM LOGS</text>',
            '  <line x1="24" y1="52" x2="876" y2="52" stroke="var(--rule)" stroke-width="1"/>']
     svg += parts
-    svg += ['  <line x1="24" y1="366" x2="876" y2="366" stroke="var(--rule)" stroke-width="1"/>']
+    svg += ['  <line x1="24" y1="524" x2="876" y2="524" stroke="var(--rule)" stroke-width="1"/>']
     for i, n in enumerate(notes):
-        svg.append(f'  <text x="24" y="{390+i*20}" font-size="11.5" fill="var(--muted)" class="mono">{n}</text>')
+        svg.append(f'  <text x="24" y="{548+i*20}" font-size="11.5" fill="var(--muted)" class="mono">{n}</text>')
     svg.append('</svg>')
 
     html = f'''<!DOCTYPE html>

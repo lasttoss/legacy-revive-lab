@@ -1,0 +1,10 @@
+{"trace":"t-9f31","service":"customer-svc","sql":"select * from customers where id = 12"}
+{"trace":"t-9f31","service":"order-svc","sql":"select * from orders where customerId = 12"}
+{"trace":"t-77a2","service":"customer-svc","sql":"select * from customers where id = 12"}
+{"trace":"t-c410","service":"order-svc","sql":"select * from orders where id = 44"}
+{"trace":"t-c410","service":"customer-svc","sql":"select * from customers where id = 12"}
+{"trace":"t-2b88","service":"order-svc","sql":"insert into orders (id, customerId) values (45, 12)"}
+{"trace":"t-2b88","service":"order-svc","sql":"select * from orders where id = 45"}
+{"trace":"t-2b88","service":"customer-svc","sql":"select * from customers where id = 12"}
+{"trace":"t-5d90","service":"customer-svc","sql":"select * from customers order by name limit 50"}
+{"trace":"t-5d90","service":"customer-svc","sql":"update customers set lastSeen = 1 where id = 12"}
