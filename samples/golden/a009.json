@@ -1,0 +1,16 @@
+{
+  "id" : "a009",
+  "method" : "GET",
+  "path" : "/api/orders/1001",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "id" : 1001,
+    "customerId" : 1,
+    "status" : "PAID",
+    "total" : 250,
+    "fee" : 17.5,
+    "createdAt" : "2024-01-05T10:00:00",
+    "items" : [ ]
+  }
+}

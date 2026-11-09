@@ -1,0 +1,16 @@
+{
+  "id" : "a006",
+  "method" : "GET",
+  "path" : "/api/orders/1003",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "id" : 1003,
+    "customerId" : 2,
+    "status" : "CANCELLED",
+    "total" : 900,
+    "fee" : 63,
+    "createdAt" : "2024-02-07T09:15:00",
+    "items" : [ ]
+  }
+}

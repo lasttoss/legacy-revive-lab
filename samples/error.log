@@ -1,0 +1,23 @@
+2024-03-01T09:01:05.412Z ERROR [legacy-svc,t-0014] c.e.l.web.LegacyController - Servlet.service() for servlet [dispatcherServlet] threw exception
+java.lang.NullPointerException: null
+	at com.example.legacy.web.LegacyController.customer(LegacyController.java:31)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+2024-03-01T09:01:20.884Z ERROR [legacy-svc,t-0015] c.e.l.web.LegacyController - Servlet.service() for servlet [dispatcherServlet] threw exception
+java.lang.NullPointerException: null
+	at com.example.legacy.web.LegacyController.order(LegacyController.java:41)
+
+2024-03-01T09:03:11.002Z ERROR [legacy-svc,t-0021] c.e.l.service.LegacyService - could not parse qty
+java.lang.NumberFormatException: For input string: "three"
+	at java.base/java.lang.Integer.parseInt(Integer.java:652)
+	at com.example.legacy.service.LegacyService.createOrder(LegacyService.java:58)
+
+2024-03-01T09:05:40.117Z ERROR [legacy-svc,t-0022] c.e.l.service.LegacyService - could not parse qty
+java.lang.NumberFormatException: For input string: "three"
+	at com.example.legacy.service.LegacyService.createOrder(LegacyService.java:58)
+
+2024-03-01T09:06:02.553Z ERROR [legacy-svc,t-0023] c.e.l.repo.OrderRepository - could not extract ResultSet
+org.hibernate.exception.SQLGrammarException: could not prepare statement
+	at org.hibernate.exception.internal.SQLStateConversionDelegate.convert(SQLStateConversionDelegate.java:120)
+
+2024-03-01T09:08:44.901Z WARN  [legacy-svc,t-0024] c.e.l.web.LegacyController - slow request 3120ms for /api/reports/top

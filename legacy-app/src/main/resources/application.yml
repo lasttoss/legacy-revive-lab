@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: jdbc:sqlite:target/legacy.db
+    # in-memory SQLite shared between connections: hermetic tests, no stale file between runs
+    url: jdbc:sqlite:file:legacy?mode=memory&cache=shared
     driver-class-name: org.sqlite.JDBC
   jpa:
     database-platform: com.example.legacy.db.LegacySQLiteDialect

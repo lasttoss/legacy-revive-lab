@@ -1,0 +1,28 @@
+{
+  "id" : "a018",
+  "method" : "POST",
+  "path" : "/api/orders",
+  "requestBody" : {
+    "customerId" : 3,
+    "items" : [ {
+      "sku" : "SKU-D",
+      "qty" : 1,
+      "price" : 300.0
+    } ]
+  },
+  "status" : 200,
+  "body" : {
+    "id" : 1794235787688,
+    "customerId" : 3,
+    "status" : "OPEN",
+    "total" : 300.0,
+    "fee" : 21.0,
+    "createdAt" : "2026-11-09T14:49:47.688",
+    "items" : [ {
+      "id" : 8,
+      "sku" : "SKU-D",
+      "qty" : 1,
+      "price" : 300.0
+    } ]
+  }
+}

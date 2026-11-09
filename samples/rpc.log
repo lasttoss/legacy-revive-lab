@@ -1,0 +1,11 @@
+{"trace":"t-0001","caller":"api-gateway","callee":"customer-svc","method":"GET","path":"/api/customers/1","status":200,"ms":14}
+{"trace":"t-0002","caller":"api-gateway","callee":"order-svc","method":"GET","path":"/api/orders/1001","status":200,"ms":9}
+{"trace":"t-0003","caller":"api-gateway","callee":"report-svc","method":"GET","path":"/api/reports/top","status":200,"ms":21}
+{"trace":"t-0003","caller":"report-svc","callee":"customer-svc","method":"GET","path":"/api/customers/1","status":200,"ms":6}
+{"trace":"t-0003","caller":"report-svc","callee":"order-svc","method":"GET","path":"/api/orders/1001","status":200,"ms":5}
+{"trace":"t-0013","caller":"api-gateway","callee":"order-svc","method":"POST","path":"/api/orders","status":200,"ms":26}
+{"trace":"t-0013","caller":"order-svc","callee":"customer-svc","method":"GET","path":"/api/customers/1","status":200,"ms":4}
+{"trace":"t-0016","caller":"api-gateway","callee":"order-svc","method":"POST","path":"/api/orders","status":200,"ms":31}
+{"trace":"t-0016","caller":"order-svc","callee":"customer-svc","method":"GET","path":"/api/customers/2","status":200,"ms":3}
+{"trace":"t-0018","caller":"api-gateway","callee":"order-svc","method":"POST","path":"/api/orders","status":200,"ms":28}
+{"trace":"t-0025","caller":"api-gateway","callee":"customer-svc","method":"GET","path":"/api/customers/3","status":200,"ms":10}

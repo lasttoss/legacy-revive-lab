@@ -1,0 +1,16 @@
+{
+  "id" : "a005",
+  "method" : "GET",
+  "path" : "/api/orders/1002",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "id" : 1002,
+    "customerId" : 1,
+    "status" : "OPEN",
+    "total" : 40,
+    "fee" : 0,
+    "createdAt" : "2024-02-06T11:30:00",
+    "items" : [ ]
+  }
+}

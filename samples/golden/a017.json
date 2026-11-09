@@ -1,0 +1,18 @@
+{
+  "id" : "a017",
+  "method" : "GET",
+  "path" : "/api/reports/top?limit=3",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : [ {
+    "id" : 2,
+    "name" : "Bob",
+    "spent" : 1100,
+    "orders" : 2
+  }, {
+    "id" : 1,
+    "name" : "Alice",
+    "spent" : 540,
+    "orders" : 3
+  } ]
+}

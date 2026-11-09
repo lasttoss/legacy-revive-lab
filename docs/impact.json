@@ -1,0 +1,131 @@
+{
+  "endpoint:GET /api/customers/{id}": {
+    "type": "endpoint",
+    "dependents": [
+      "caller api-gateway",
+      "caller order-svc",
+      "caller report-svc"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "endpoint:GET /api/orders/{id}": {
+    "type": "endpoint",
+    "dependents": [
+      "caller api-gateway",
+      "caller report-svc"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "endpoint:GET /api/reports/top": {
+    "type": "endpoint",
+    "dependents": [
+      "caller api-gateway"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "endpoint:POST /api/orders": {
+    "type": "endpoint",
+    "dependents": [
+      "caller api-gateway"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "service:api-gateway": {
+    "type": "service",
+    "dependents": [],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "service:customer-svc": {
+    "type": "service",
+    "dependents": [
+      "caller api-gateway",
+      "caller order-svc",
+      "caller report-svc",
+      "table customers",
+      "table order_items",
+      "table orders"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "service:order-svc": {
+    "type": "service",
+    "dependents": [
+      "caller api-gateway",
+      "caller report-svc",
+      "table customers",
+      "table order_items",
+      "table orders"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "service:report-svc": {
+    "type": "service",
+    "dependents": [
+      "caller api-gateway",
+      "table customers",
+      "table orders"
+    ],
+    "evidence": [
+      "samples/rpc.log"
+    ]
+  },
+  "table:customers": {
+    "type": "database table",
+    "dependents": [
+      "endpoint GET /api/customers/{id}",
+      "endpoint GET /api/reports/top",
+      "service customer-svc",
+      "service order-svc",
+      "service report-svc"
+    ],
+    "evidence": [
+      "samples/sql.log"
+    ]
+  },
+  "table:legacy_audit": {
+    "type": "database table",
+    "dependents": [],
+    "evidence": []
+  },
+  "table:order_items": {
+    "type": "database table",
+    "dependents": [
+      "endpoint GET /api/customers/{id}",
+      "endpoint POST /api/orders",
+      "service customer-svc",
+      "service order-svc"
+    ],
+    "evidence": [
+      "samples/sql.log"
+    ]
+  },
+  "table:orders": {
+    "type": "database table",
+    "dependents": [
+      "endpoint GET /api/customers/{id}",
+      "endpoint GET /api/orders/{id}",
+      "endpoint GET /api/reports/top",
+      "endpoint POST /api/orders",
+      "service customer-svc",
+      "service order-svc",
+      "service report-svc"
+    ],
+    "evidence": [
+      "samples/sql.log"
+    ]
+  }
+}

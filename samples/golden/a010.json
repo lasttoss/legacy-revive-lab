@@ -1,0 +1,10 @@
+{
+  "id" : "a010",
+  "method" : "GET",
+  "path" : "/api/legacy/ping",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "ok" : true
+  }
+}

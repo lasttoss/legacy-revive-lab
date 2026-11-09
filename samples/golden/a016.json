@@ -1,0 +1,28 @@
+{
+  "id" : "a016",
+  "method" : "POST",
+  "path" : "/api/orders",
+  "requestBody" : {
+    "customerId" : 2,
+    "items" : [ {
+      "sku" : "SKU-C",
+      "qty" : 10,
+      "price" : 20.0
+    } ]
+  },
+  "status" : 200,
+  "body" : {
+    "id" : 1794235787676,
+    "customerId" : 2,
+    "status" : "OPEN",
+    "total" : 200.0,
+    "fee" : 14.0,
+    "createdAt" : "2026-11-09T14:49:47.676",
+    "items" : [ {
+      "id" : 7,
+      "sku" : "SKU-C",
+      "qty" : 10,
+      "price" : 20.0
+    } ]
+  }
+}

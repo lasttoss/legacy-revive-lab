@@ -1,0 +1,38 @@
+{
+  "id" : "a011",
+  "method" : "GET",
+  "path" : "/api/customers/1",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "id" : 1,
+    "name" : "Alice",
+    "email" : "alice@example.com",
+    "tier" : "GOLD",
+    "orders" : [ {
+      "id" : 1001,
+      "customerId" : 1,
+      "status" : "PAID",
+      "total" : 250,
+      "fee" : 17.5,
+      "createdAt" : "2024-01-05T10:00:00",
+      "items" : [ ]
+    }, {
+      "id" : 1001,
+      "customerId" : 1,
+      "status" : "PAID",
+      "total" : 250,
+      "fee" : 17.5,
+      "createdAt" : "2024-01-05T10:00:00",
+      "items" : [ ]
+    }, {
+      "id" : 1002,
+      "customerId" : 1,
+      "status" : "OPEN",
+      "total" : 40,
+      "fee" : 0,
+      "createdAt" : "2024-02-06T11:30:00",
+      "items" : [ ]
+    } ]
+  }
+}

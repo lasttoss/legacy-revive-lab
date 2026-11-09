@@ -1,0 +1,14 @@
+{
+  "id" : "a007",
+  "method" : "GET",
+  "path" : "/api/customers/3",
+  "requestBody" : null,
+  "status" : 200,
+  "body" : {
+    "id" : 3,
+    "name" : "Carol",
+    "email" : "carol@example.com",
+    "tier" : null,
+    "orders" : [ ]
+  }
+}
