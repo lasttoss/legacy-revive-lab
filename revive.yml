@@ -1,0 +1,17 @@
+# One file describes the repository. Absent, the layout is discovered automatically.
+root: .
+
+# Per-service settings. Every command that needs a build loop reads this list.
+services:
+  - name: legacy-svc
+    path: legacy-app
+    build: maven
+    coverage_xml: legacy-app/target/site/jacoco/jacoco.xml
+    logs:
+      access: samples/access.log
+      sql: samples/sql.log
+      error: samples/error.log
+      rpc: samples/rpc.log
+
+# Where generated documents go, relative to root.
+docs: docs

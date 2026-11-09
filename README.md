@@ -56,6 +56,7 @@ samples/rpc.log      11 cross-service calls       -> service map, endpoint->endp
 | `docs/API.md` | `make docs` | per-endpoint contract with real request/response |
 | `out/CHANGED-IMPACT.md` | `make changed-git` | this diff touches these endpoints, tables, callers, recordings |
 | `docs/SPANS.md` | `make spans` | what the test run actually executed, and whether the maps agree |
+| `docs/MODULES.md` | `make modules` | which Spring services a repository contains, and what each one owns |
 
 ## Measured on this snapshot
 
@@ -80,6 +81,41 @@ generated artifacts 11 markdown files + 1 json, all reproducible
 
 Coverage went 84.9% -> 89.2% with one change: deleting the class nothing referenced. That is the cheapest
 coverage win in any legacy codebase, and the inventory finds it automatically.
+
+## A repository with several services: one path is the only input
+
+```bash
+make modules                          # this repository
+make modules ROOT=/path/to/checkout    # any repository, untouched
+```
+
+Real output on the bundled three-service example:
+
+```
+services=3 endpoints=6
+  api-gateway                2 endpoints  0 tables  0 test files
+  customer-svc               2 endpoints  1 tables  0 test files
+  order-svc                  2 endpoints  1 tables  0 test files
+```
+
+Discovery reads source text: `pom.xml` for Spring Boot, `@RestController` for endpoints, `@Entity`/`@Table`
+for tables, `src/test` for tests. No build, no run, no database, and nothing written into the scanned
+repository. A class-level `@RequestMapping` is treated as a prefix, so `/api` + `/customers/{id}` is one
+endpoint rather than two.
+
+**What a path buys today, and what it does not.** Being precise here matters more than sounding complete:
+
+| Step | One path enough? | Why |
+|---|---|---|
+| discovery, module list, endpoint and table inventory | yes | pure source parsing |
+| change impact (`changed.py`) | yes, per module | needs the module's own sources and logs |
+| endpoint to table map, error catalogue, service map | yes, per service | needs that service's logs |
+| golden recordings, generated tests, coverage gate | needs a build per module | `revive.yml` names the command and the coverage file |
+| cross-service endpoint map | needs one shared trace id | joins only exist if the traces do |
+
+`revive.yml` is the file that closes the gap: it lists each service with its path, build type, coverage
+report and log locations. Absent, discovery still works and every per-service command falls back to the
+single module in this repository.
 
 ## Traces, not drawings: the map is rebuilt from the test run
 

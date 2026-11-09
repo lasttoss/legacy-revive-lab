@@ -4,9 +4,11 @@ IMAGE := maven:3.9-eclipse-temurin-8
 MVN := docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e MAVEN_OPTS="-Dmaven.repo.local=/tmp/m2" \
        -v "$(PWD):/w" -v "$$HOME/.m2:/tmp/m2" -w /w/legacy-app $(IMAGE) mvn -B -Dmaven.repo.local=/tmp/m2
 
-.PHONY: help changed changed-git maps record tests verify docs coverage spans smoke advise-prompt advise-dry advise-fixture advise advise-check all clean
+.PHONY: help modules changed changed-git maps record tests verify docs coverage spans smoke advise-prompt advise-dry advise-fixture advise advise-check all clean
 
 help:
+	@echo "make modules                            which Spring services are in a repository (default: this one)"
+	@echo "make modules ROOT=/path/to/repo         same, on any repository, unmodified"
 	@echo "make changed FILES=\"a.java b.java\"   what is affected by these files -> out/CHANGED-IMPACT.md"
 	@echo "make changed-git                        same, from git diff HEAD (what a PR would touch)"
 	@echo "make maps       inventory, endpoint->table, error catalogue, service map (no build needed)"
@@ -22,6 +24,9 @@ help:
 	@echo "make advise-fixture replay a saved answer through validate+render; no request, no key"
 	@echo "make advise         one real OpenAI call (needs OPENAI_API_KEY) -> docs/ADVICE.md"
 	@echo "make all            maps + tests + verify + coverage + docs"
+
+modules:
+	@python3 kit/discover.py $(if $(ROOT),--root $(ROOT),)
 
 changed:
 	@python3 kit/changed.py $(FILES)
