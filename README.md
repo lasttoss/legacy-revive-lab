@@ -4,6 +4,9 @@ A Spring Boot 2.7 / Java 8 / SQLite service with **no tests, no docs, no CI** �
 turns it into a service with a 20-test suite, generated documentation, a service map, an impact index and
 a coverage gate at 80%.
 
+You are on the **`revival`** branch, which is the default view. The untouched service —
+no tests, no docs, no CI — is on **[`main`](https://github.com/lasttoss/legacy-revive-lab/tree/main)**.
+
 The repository is two branches on purpose, so the change can be reviewed as a diff:
 
 ```
