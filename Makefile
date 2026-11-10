@@ -4,7 +4,7 @@ IMAGE := maven:3.9-eclipse-temurin-8
 MVN := docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e MAVEN_OPTS="-Dmaven.repo.local=/tmp/m2" \
        -v "$(PWD):/w" -v "$$HOME/.m2:/tmp/m2" -w /w/legacy-app $(IMAGE) mvn -B -Dmaven.repo.local=/tmp/m2
 
-.PHONY: help modules system changed changed-git maps record tests verify docs coverage spans smoke advise-prompt advise-dry advise-fixture advise advise-check all clean
+.PHONY: kit-test help modules system changed changed-git maps record tests verify docs coverage spans smoke advise-prompt advise-dry advise-fixture advise advise-check all clean
 
 help:
 	@echo "make modules                            which Spring services are in a repository (default: this one)"
@@ -61,6 +61,9 @@ spans:
 
 smoke:
 	@bash kit/smoke_docker.sh
+
+kit-test:
+	python3 kit/tests/test_coverage_gate.py
 
 coverage:
 	@python3 kit/coverage_gate.py $(if $(UPDATE),--update,)

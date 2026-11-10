@@ -19,6 +19,26 @@ ROOT = Path(__file__).resolve().parents[1]
 XML = ROOT / "legacy-app/target/site/jacoco/jacoco.xml"
 BASELINE = ROOT / ".coverage-baseline"
 FLOOR = 0.80
+# The baseline is stored with four decimals, so the ratchet must be compared at that
+# precision. Comparing raw floats made a no-change run fail: 107/120 = 0.891666...
+# against a stored 0.8917 is not a drop, but it is smaller as a float.
+DEFAULT_DECIMALS = 4
+
+
+def baseline_decimals(text: str) -> int:
+    """How many decimals the baseline was written with ('0.892' -> 3, '0.8917' -> 4)."""
+    text = text.strip()
+    return len(text.split(".")[1]) if "." in text else 0
+
+
+def ratchet_dropped(ratio: float, base: float, decimals: int = DEFAULT_DECIMALS) -> bool:
+    """True only when coverage fell by at least one unit of the recorded precision.
+
+    Rounding both sides to the precision the baseline was written with is what makes
+    "no change" pass: 107/120 = 0.891666... against a recorded 0.8917 is not a drop,
+    and neither is it against a recorded 0.892.
+    """
+    return round(ratio, decimals) < round(base, decimals)
 
 
 def counters() -> dict[str, tuple[int, int]]:
@@ -47,14 +67,16 @@ def main() -> int:
         cov, tot = c.get(k, (0, 0))
         print(f"{k:8} {cov:8} {tot:7}  {100.0 * cov / tot:5.1f}%")
 
-    base = float(BASELINE.read_text().strip()) if BASELINE.exists() else 0.0
+    base_text = BASELINE.read_text().strip() if BASELINE.exists() else "0"
+    base = float(base_text)
+    decimals = baseline_decimals(base_text)
     print(f"\nfloor={FLOOR:.0%}  baseline={base:.1%}  now={ratio:.1%}")
 
     failed = False
     if ratio < FLOOR:
         print(f"FAIL below the {FLOOR:.0%} floor")
         failed = True
-    if ratio + 1e-9 < base:
+    if ratchet_dropped(ratio, base, decimals):
         print(f"FAIL ratchet: coverage dropped from {base:.1%} to {ratio:.1%}")
         failed = True
 

@@ -54,6 +54,9 @@ jobs:
           python3 kit/spanmap.py            # regenerate from this run's traces
           python3 kit/spanmap.py --check    # deterministic: documented endpoints == executed endpoints
 
+      - name: Ratchet tests (the gate must not fail on an unchanged run)
+        run: python3 kit/tests/test_coverage_gate.py
+
       - name: Coverage gate
         run: python3 kit/coverage_gate.py
 
